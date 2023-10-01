@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.authentication import TokenAuthentication
 
 from .serializers import ImageSerializer
+from .models import Image
 
 
 @api_view(['POST'])
@@ -20,3 +21,17 @@ def image_save(request):
         return Response({"detail": "Image saved"}, status=status.HTTP_201_CREATED)
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def list_images(request):
+    """
+    Get links to all images
+    """
+    data = {}
+    user = request.user
+    images = Image.objects.filter(owner=user)
+    for img in images:
+        data[img.id] = img.image.url
+    return Response({"data": data}, status=status.HTTP_200_OK)
