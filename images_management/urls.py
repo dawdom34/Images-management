@@ -17,6 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from users.views import login_user, logout_user, create_tier
+
 urlpatterns = [
+    # Admin panel
     path('admin/', admin.site.urls),
+    # Authentication
+    path('login/', login_user),
+    path('logout/', logout_user),
+    # Create new account tier
+    path('create_tier/', create_tier)
 ]

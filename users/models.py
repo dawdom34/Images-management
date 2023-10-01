@@ -2,6 +2,37 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 
+class ThumbnailSizes(models.Model):
+    """
+    Sizes of the thumbnails
+    """
+    size = models.IntegerField(help_text='Height of the thumbnail is pixels')
+
+    def __str__(self):
+        return str(self.size)
+
+
+class AccountTier(models.Model):
+    """
+    Account tiers
+    """
+    name = models.CharField(max_length=40, blank=False, unique=True, help_text='Name of tier')
+    thumbnail_size = models.ManyToManyField(ThumbnailSizes, help_text='Avallable thumbnail sizes')
+    original_file = models.BooleanField(help_text='Presence of the link to the originally uploaded file')
+    expiring_links = models.BooleanField(help_text='Ability to generate expiring links')
+
+    def __str__(self):
+        return self.name
+    
+    @classmethod
+    def get_default_pk(cls):
+        """
+        Return default account tier (Basic)
+        """
+        default_pk = cls.objects.get(name='Basic')
+        return default_pk
+
+
 class AccountManager(BaseUserManager):
 
     def create_user(self, username, password):
@@ -33,6 +64,7 @@ class Account(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    account_tier = models.ForeignKey(AccountTier, on_delete=models.SET_NULL, null=True)
 
     objects = AccountManager()
 
