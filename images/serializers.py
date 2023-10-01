@@ -18,3 +18,7 @@ class ImageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f'Invalid uploaded file type: {extension}')
         
         return Image.objects.create(**validated_data)
+    
+
+class OriginalImageSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
