@@ -21,7 +21,7 @@ from django.conf import settings
 
 from users.views import login_user, logout_user, create_tier
 
-from images.views import image_save, list_images, get_original_image
+from images.views import image_save, list_images, get_original_image, get_thumbnail
 
 urlpatterns = [
     # Admin panel
@@ -36,7 +36,9 @@ urlpatterns = [
     # Get links to all images
     path('list_images/', list_images),
     # Get link to original image
-    path('get_original_image/', get_original_image)
+    path('get_original_image/', get_original_image),
+    # Get link to the thumbnail with given size
+    path('get_thumbnail/', get_thumbnail),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

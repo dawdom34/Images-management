@@ -22,3 +22,8 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class OriginalImageSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+
+
+class ThumbnailSerializer(serializers.Serializer):
+    image_id = serializers.IntegerField()
+    size = serializers.IntegerField()
