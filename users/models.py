@@ -64,7 +64,7 @@ class Account(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    account_tier = models.ForeignKey(AccountTier, on_delete=models.SET_NULL, null=True, default=AccountTier.get_default_pk)
+    account_tier = models.ForeignKey(AccountTier, on_delete=models.SET_NULL, null=True)
 
     objects = AccountManager()
 
