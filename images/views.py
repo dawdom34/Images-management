@@ -46,7 +46,7 @@ def list_images(request):
         data[img.id] = img.image.url
     return Response({"data": data}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def get_original_image(request):
@@ -70,7 +70,7 @@ def get_original_image(request):
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def get_thumbnail(request):
@@ -114,7 +114,7 @@ def get_thumbnail(request):
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def generate_expiring_image_link(request):
@@ -146,7 +146,7 @@ def generate_expiring_image_link(request):
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET'])
+@api_view(['POST'])
 def validate_expired_link(request, **kwargs):
     """
     Expired link validation

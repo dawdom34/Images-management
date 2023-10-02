@@ -8,7 +8,6 @@ from django.urls import reverse
 from users.models import ThumbnailSizes, AccountTier, Account
 
 from .models import Image
-from .serializers import OriginalImageSerializer
 
 from PIL import Image as PILimage
 import io
@@ -26,8 +25,10 @@ class ImageTests(APITestCase):
         self.tier.thumbnail_size.add(self.size)
         self.admin = Account.objects.get(id=self.admin_user.id)
         self.admin.account_tier = self.tier
+        self.admin.save()
         self.user = Account.objects.get(id=self.user.id)
         self.user.account_tier = self.tier2
+        self.user.save()
         self.image_path = '../image_test/test_image.png'
         self.image = Image.objects.create(owner=self.admin_user, image=self.image_path)
         self.image = Image.objects.create(owner=self.user, image=self.image_path)
@@ -38,6 +39,7 @@ class ImageTests(APITestCase):
         self.list_images_url = reverse('list_images')
         self.original_image_url = reverse('get_original_file')
         self.get_thumbnail_url = reverse('get_thumbnail')
+        self.expiring_url = reverse('generate_expiring_image_link')
 
     def generate_image(self):
         file = io.BytesIO()
@@ -80,8 +82,8 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='admin')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'id': self.image.id}
-        response = client.get(self.original_image_url, data=data)
-        self.assertEqual(response.content, '')
+        response = client.post(self.original_image_url, data=data)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_original_file_invalid_id(self):
@@ -90,9 +92,8 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='admin')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'id': 123}
-        response = client.get(self.original_image_url, data=data)
+        response = client.post(self.original_image_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.content, '')
 
     def test_original_file_no_permissions(self):
         client = APIClient()
@@ -100,9 +101,8 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='user')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'id': self.image.id}
-        response = client.get(self.original_image_url, data=data)
+        response = client.post(self.original_image_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.content, '')
 
     def test_get_thumbnail_success(self):
         client = APIClient()
@@ -110,8 +110,7 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='admin')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'image_id': self.image.id, 'size': 200,}
-        response = client.get(self.get_thumbnail_url, data=data)
-        print(response.content)
+        response = client.post(self.get_thumbnail_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_thumbnail_id_not_exist(self):
@@ -120,7 +119,7 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='admin')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'image_id': 123, 'size': 200}
-        response = client.get(self.get_thumbnail_url, data=data)
+        response = client.post(self.get_thumbnail_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_thumbnail_access_denied(self):
@@ -129,10 +128,53 @@ class ImageTests(APITestCase):
         token = Token.objects.get(user__username='admin')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data = {'image_id': 123, 'size': 400}
-        response = client.get(self.get_thumbnail_url, data=data)
+        response = client.post(self.get_thumbnail_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_serializer(self):
-        data = {'id': self.image.id}
-        ser = OriginalImageSerializer(data=data)
-        print(f'++++++++++++++++++++++++{ser.is_valid()}')
+    def test_get_expiring_link_success(self):
+        client = APIClient()
+        client.post(self.login_url, self.admin_data)
+        token = Token.objects.get(user__username='admin')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {'time': 300, 'image_id': self.image.id}
+        response = client.post(self.expiring_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_expiring_link_invalid_image_id(self):
+        client = APIClient()
+        client.post(self.login_url, self.admin_data)
+        token = Token.objects.get(user__username='admin')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {'time': 300, 'image_id': 1233}
+        response = client.post(self.expiring_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_expiring_link_invalid_time(self):
+        client = APIClient()
+        client.post(self.login_url, self.admin_data)
+        token = Token.objects.get(user__username='admin')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {'time': 1, 'image_id': self.image.id}
+        response = client.post(self.expiring_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_expiring_link_access_denied(self):
+        client = APIClient()
+        client.post(self.login_url, self.user_data)
+        token = Token.objects.get(user__username='user')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {'time': 300, 'image_id': self.image.id}
+        response = client.post(self.expiring_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_validate_link_invalid_img_id(self):
+        client = APIClient()
+        client.post(self.login_url, self.admin_data)
+        token = Token.objects.get(user__username='admin')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        data = {'time': 300, 'image_id': self.image.id}
+        response = client.post(self.expiring_url, data=data)
+        link = 'miroeantn5rnypn5yui5n4wyiurneuyieonyr'
+        url = reverse('validate_link', kwargs={'link': link})
+        response = client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
