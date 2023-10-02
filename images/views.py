@@ -9,7 +9,6 @@ import mimetypes
 from django.utils import timezone
 from django.core.signing import Signer
 from django.http import FileResponse
-from django.conf.global_settings import DEBUG
 
 from users.models import Account
 
@@ -66,7 +65,7 @@ def get_original_image(request):
             data['image'] = image.image.url
             return Response({"data": data}, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "Account tier of given user does not allow to get  original size image."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Account tier of given user does not allow to get original size image."}, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     

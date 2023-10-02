@@ -18,6 +18,9 @@ def thumbnails_filepath(self, filename):
     return f'thumbnails/{filename}'
 
 def temp_images_filepath(self, filename):
+    """
+    Return path to images with expiration time
+    """
     return f'temporary/{filename}'
 
 
@@ -49,6 +52,6 @@ class Image(models.Model):
 @receiver(pre_delete, sender=Image)
 def delete_file(sender, instance, **kwargs):
     """
-    Delete image from server 
+    Remove the image file from the server before deleting the object
     """
     instance.image.delete(False)
