@@ -23,14 +23,6 @@ class AccountTier(models.Model):
 
     def __str__(self):
         return self.name
-    
-    @classmethod
-    def get_default_pk(cls):
-        """
-        Return default account tier (Basic)
-        """
-        default_pk = cls.objects.get(name='Basic')
-        return default_pk
 
 
 class AccountManager(BaseUserManager):
