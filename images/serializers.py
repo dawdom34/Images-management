@@ -25,9 +25,10 @@ class OriginalImageSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-                _ = Image.objects.get(id=attrs['id'])
+            _ = Image.objects.get(id=attrs['id'])
         except Image.DoesNotExist:
             raise serializers.ValidationError('Image with given id does not exist')
+        return attrs
 
 
 class ThumbnailSerializer(serializers.Serializer):
@@ -36,9 +37,10 @@ class ThumbnailSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         try:
-                _ = Image.objects.get(id=attrs['image_id'])
+            _ = Image.objects.get(id=attrs['image_id'])
         except Image.DoesNotExist:
             raise serializers.ValidationError('Image with given id does not exist')
+        return attrs
 
 
 class ExpiredLinkSerializer(serializers.Serializer):
