@@ -21,7 +21,7 @@ from django.conf import settings
 
 from users.views import login_user, logout_user, create_tier
 
-from images.views import image_save, list_images, get_original_image, get_thumbnail
+from images.views import image_save, list_images, get_original_image, get_thumbnail, generate_expiring_image_link
 
 urlpatterns = [
     # Admin panel
@@ -39,6 +39,8 @@ urlpatterns = [
     path('get_original_image/', get_original_image),
     # Get link to the thumbnail with given size
     path('get_thumbnail/', get_thumbnail),
+    # Generate expiring link
+    path('generate_expiring_link/', generate_expiring_image_link),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
