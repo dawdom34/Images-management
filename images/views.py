@@ -4,8 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authentication import TokenAuthentication
 
+import mimetypes
+
 from django.utils import timezone
 from django.core.signing import Signer
+from django.http import FileResponse
 
 from users.models import Account
 
@@ -151,7 +154,7 @@ def generate_expiring_image_link(request):
                     signer = Signer()
                     signed_link = signer.sign(tp.id)
                     # Create new url with signed id
-                    full_url = f'/validate_expire_link/{signed_link}'
+                    full_url = f'/validate_link/{signed_link}/'
                     return Response({"data": full_url}, status=status.HTTP_200_OK)
                 else:
                     return Response({"data": "Expiration time not between 300 and 30000 seconds"}, status=status.HTTP_400_BAD_REQUEST)
@@ -161,3 +164,29 @@ def generate_expiring_image_link(request):
             return Response({"data": "Account tier of given user does not allow to generate expired links"}, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def validate_expired_link(request, **kwargs):
+    """
+    Expired link validation
+    Returns image if link is not expired
+    """
+    img_link = kwargs.get('link')
+    try:
+        # Decode image id from signed link
+        signer = Signer()
+        decoded = signer.unsign(img_link)
+        # Check if image exist
+        try:
+            temp_img_obj = TemporaryImages.objects.get(id=int(decoded))
+            # Check if image is expired
+            if temp_img_obj.expiration_date <= timezone.now():
+                return Response({"error": "Link expired"}, status=status.HTTP_400_BAD_REQUEST)
+            # Save image type
+            contenttype = mimetypes.guess_type(temp_img_obj.image.url)
+            # Return file
+            return FileResponse(temp_img_obj.image, content_type=contenttype[0], as_attachment=True, filename=temp_img_obj.image.name.split('/')[-1])
+        except TemporaryImages.DoesNotExist:
+            return Response({"data": "Image with given id does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
