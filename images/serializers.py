@@ -27,3 +27,8 @@ class OriginalImageSerializer(serializers.Serializer):
 class ThumbnailSerializer(serializers.Serializer):
     image_id = serializers.IntegerField()
     size = serializers.IntegerField()
+
+
+class ExpiredLinkSerializer(serializers.Serializer):
+    time = serializers.IntegerField()
+    image_id = serializers.IntegerField()

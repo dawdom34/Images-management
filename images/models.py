@@ -17,6 +17,17 @@ def thumbnails_filepath(self, filename):
     """
     return f'thumbnails/{filename}'
 
+def temp_images_filepath(self, filename):
+    return f'temporary/{filename}'
+
+
+class TemporaryImages(models.Model):
+    """
+    Images with expiration time
+    """
+    image = models.ImageField(upload_to=temp_images_filepath)
+    expiration_date = models.DateTimeField()
+
 
 class Thumbnail(models.Model):
     """
