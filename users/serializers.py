@@ -9,9 +9,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'password']
 
 
-class TierSerializer(serializers.ModelSerializer):
+class TierSerializer(serializers.Serializer):
+    name = serializers.CharField()
     thumbnail_size = serializers.CharField()
+    original_file = serializers.BooleanField()
+    expiring_links = serializers.BooleanField()
 
-    class Meta:
-        model = AccountTier
-        fields = ['name', 'thumbnail_size', 'original_file', 'expiring_links']
+    def validate(self, attrs):
+        name = attrs['name']
+        if not name.isalpha():
+            raise serializers.ValidationError('Name can contain only letters')
+        return attrs

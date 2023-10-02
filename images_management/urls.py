@@ -27,22 +27,22 @@ urlpatterns = [
     # Admin panel
     path('admin/', admin.site.urls),
     # Authentication
-    path('login/', login_user),
-    path('logout/', logout_user),
+    path('login/', login_user, name='login'),
+    path('logout/', logout_user, name='logout'),
     # Create new account tier
-    path('create_tier/', create_tier),
+    path('create_tier/', create_tier, name='create_tier'),
     # Save new image to db
-    path('image_save/', image_save),
+    path('image_save/', image_save, name='image_save'),
     # Get links to all images
-    path('list_images/', list_images),
+    path('list_images/', list_images, name='list_images'),
     # Get link to original image
-    path('get_original_image/', get_original_image),
+    path('get_original_image/', get_original_image, name='get_original_file'),
     # Get link to the thumbnail with given size
-    path('get_thumbnail/', get_thumbnail),
+    path('get_thumbnail/', get_thumbnail, name='get_thumbnail'),
     # Generate expiring link
-    path('generate_expiring_link/', generate_expiring_image_link),
+    path('generate_expiring_link/', generate_expiring_image_link, name='generate_expiring_image_link'),
     # Validate expired link
-    path('validate_link/<link>/', validate_expired_link),
+    path('validate_link/<link>/', validate_expired_link, name='validate_link'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

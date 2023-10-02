@@ -54,9 +54,9 @@ def create_tier(request):
             try:
                 sizes = [int(x) for x in thumbnail_size]
                 if 0 in sizes:
-                    return Response({"error": "invalid data type for 'thumbnail_size'"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "invalid data type for thumbnail_size"}, status=status.HTTP_400_BAD_REQUEST)
             except ValueError:
-                return Response({"error": "invalid data type for 'thumbnail_size'"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "invalid data type for thumbnail_size"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Create account tier object
             new_tier = AccountTier.objects.create(name=tier_name, original_file=original_file, expiring_links=expiring_links)
@@ -66,7 +66,7 @@ def create_tier(request):
                 new_size = ThumbnailSizes.objects.get_or_create(size=size)
                 new_tier.thumbnail_size.add(new_size[0])
             
-            return Response({"detail": "New tier created"}, status=status.HTTP_200_OK)
+            return Response({"detail": "New tier created"}, status=status.HTTP_201_CREATED)
         else:
             return Response({"detail": serialzier.errors}, status=status.HTTP_400_BAD_REQUEST)
     else:
